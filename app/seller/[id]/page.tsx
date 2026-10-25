@@ -1,2 +1,88 @@
-import {notFound} from 'next/navigation';import Link from 'next/link';import {db} from '@/lib/supabase';
-export default async function Seller({params}:{params:Promise<{id:string}>}){const {id}=await params;const {data:s}=await db().from('sellers').select('*').eq('id',id).single();if(!s)notFound();const {data:ps=[]}=await db().from('properties').select('*').eq('seller_id',id).eq('status','published');return <main className="wrap section"><Link href="/">← الرئيسية</Link><div className="panel" style={{marginTop:20}}><span className="tag">{s.verified?'موثّق':'غير موثّق'}</span><h1>{s.display_name}</h1><p className="muted">نوع البائع: {s.seller_type}</p><p className="muted">{s.description}</p>{s.whatsapp&&<a className="btn primary" href={'https://wa.me/'+s.whatsapp.replace(/\D/g,'')} target="_blank">واتساب</a>}</div><section className="section"><h2>إعلانات البائع</h2><div className="grid">{ps.map((p:any)=><Link className="card" key={p.id} href={'/properties/'+p.id}><img src={p.image_url||'/placeholder.svg'} alt={p.title}/><div className="cardbody"><h3>{p.title}</h3><div className="price">{Number(p.price).toLocaleString()} {p.price_currency}</div></div></Link>)}</div></section></main>}
+import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import { db } from '@/lib/supabase';
+
+export default async function Seller({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+
+  const { data: s } = await db()
+    .from('sellers')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (!s) {
+    notFound();
+  }
+
+  const { data: ps } = await db()
+    .from('properties')
+    .select('*')
+    .eq('seller_id', id)
+    .eq('status', 'published');
+
+  const properties = ps ?? [];
+
+  return (
+    <main className="wrap section">
+      <Link href="/">← الرئيسية</Link>
+
+      <div className="panel" style={{ marginTop: 20 }}>
+        <span className="tag">
+          {s.verified ? 'موثّق' : 'غير موثّق'}
+        </span>
+
+        <h1>{s.display_name}</h1>
+
+        <p className="muted">
+          نوع البائع: {s.seller_type}
+        </p>
+
+        <p className="muted">
+          {s.description}
+        </p>
+
+        {s.whatsapp && (
+          <a
+            className="btn primary"
+            href={'https://wa.me/' + s.whatsapp.replace(/\D/g, '')}
+            target="_blank"
+          >
+            واتساب
+          </a>
+        )}
+      </div>
+
+      <section className="section">
+        <h2>إعلانات البائع</h2>
+
+        <div className="grid">
+          {properties.map((p: any) => (
+            <Link
+              className="card"
+              key={p.id}
+              href={'/properties/' + p.id}
+            >
+              <img
+                src={p.image_url || '/placeholder.svg'}
+                alt={p.title}
+              />
+
+              <div className="cardbody">
+                <h3>{p.title}</h3>
+
+                <div className="price">
+                  {Number(p.price).toLocaleString()} {p.price_currency}
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+    </main>
+  );
+}

@@ -1,2 +1,84 @@
-import Link from 'next/link';import {db} from '@/lib/supabase';
-export default async function Properties({searchParams}:{searchParams:Promise<Record<string,string|undefined>>}){const s=await searchParams;let q=db().from('properties').select('*').eq('status','published').order('created_at',{ascending:false});if(s.deal)q=q.eq('deal_type',s.deal);if(s.type)q=q.eq('type',s.type);if(s.q)q=q.or(`title.ilike.%${s.q}%,city.ilike.%${s.q}%,area.ilike.%${s.q}%`);const {data=[]}=await q;return <main className="wrap section"><Link href="/">← الرئيسية</Link><h1>العقارات</h1><div className="grid">{data.map((p:any)=><Link className="card" key={p.id} href={'/properties/'+p.id}><img src={p.image_url||'/placeholder.svg'} alt={p.title}/><div className="cardbody"><span className="tag">{p.verified?'موثّق':'غير موثّق'}</span><h3>{p.title}</h3><div className="muted">📍 {p.city} - {p.area}</div><div className="price">{Number(p.price).toLocaleString()} {p.price_currency}</div><div className="meta"><span>{p.size_m2} م²</span><span>{p.rooms||0} غرف</span><span>{p.bathrooms||0} حمام</span></div></div></Link>)}</div></main>}
+import Link from 'next/link';
+import { db } from '@/lib/supabase';
+
+export default async function Properties({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
+  const s = await searchParams;
+
+  let q = db()
+    .from('properties')
+    .select('*')
+    .eq('status', 'published')
+    .order('created_at', { ascending: false });
+
+  if (s.deal) {
+    q = q.eq('deal_type', s.deal);
+  }
+
+  if (s.type) {
+    q = q.eq('type', s.type);
+  }
+
+  if (s.q) {
+    q = q.or(
+      'title.ilike.%' +
+        s.q +
+        '%,city.ilike.%' +
+        s.q +
+        '%,area.ilike.%' +
+        s.q +
+        '%'
+    );
+  }
+
+  const { data } = await q;
+  const properties = data ?? [];
+
+  return (
+    <main className="wrap section">
+      <Link href="/">← الرئيسية</Link>
+
+      <h1>العقارات</h1>
+
+      <div className="grid">
+        {properties.map((p: any) => (
+          <Link
+            className="card"
+            key={p.id}
+            href={'/properties/' + p.id}
+          >
+            <img
+              src={p.image_url || '/placeholder.svg'}
+              alt={p.title}
+            />
+
+            <div className="cardbody">
+              <span className="tag">
+                {p.verified ? 'موثّق' : 'غير موثّق'}
+              </span>
+
+              <h3>{p.title}</h3>
+
+              <div className="muted">
+                📍 {p.city} - {p.area}
+              </div>
+
+              <div className="price">
+                {Number(p.price).toLocaleString()} {p.price_currency}
+              </div>
+
+              <div className="meta">
+                <span>{p.size_m2} م²</span>
+                <span>{p.rooms || 0} غرف</span>
+                <span>{p.bathrooms || 0} حمام</span>
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </main>
+  );
+}
